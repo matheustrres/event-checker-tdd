@@ -20,8 +20,19 @@ export class CheckLastEventStatus {
 
     const now = new Date();
 
+    if (event.endDate >= now) {
+      return {
+        status: 'active',
+      }
+    }
+
+    const reviewDurationInMs: number = event.reviewDurationInHours * 60 * 60 * 1000;
+    const reviewDate = new Date(
+      event.endDate.getTime() + reviewDurationInMs,
+    );
+
     return {
-      status: event.endDate >= now ? 'active' : 'inReview',
+      status: reviewDate >= now ? 'inReview' : 'done',
     }
   }
 }
@@ -168,5 +179,21 @@ describe('CheckLastEventStatus', (): void => {
     const eventStatus = await sut.exec({ groupId });
 
     expect(eventStatus.status).toBe('inReview');
+  });
+
+  it('should return status "done" when NOW is AFTER review time', async (): Promise<void> => {
+    const { sut, loadLastEventRepository } = makeSUT();
+
+    const reviewDurationInHours: number = 1;
+    const reviewDurationInMs: number = reviewDurationInHours * 60 * 60 * 1000;
+
+    loadLastEventRepository.output = {
+      endDate: new Date(new Date().getTime() - reviewDurationInMs - 1),
+      reviewDurationInHours: 1,
+    }
+
+    const eventStatus = await sut.exec({ groupId });
+
+    expect(eventStatus.status).toBe('done');
   });
 });
