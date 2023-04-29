@@ -15,7 +15,7 @@
 - Return status "under review
 
 > ## Alternative flow: Event and note market closed
-- Return status "closed"
+- Return status "done"
 
 > ## Alternative flow: Group does not have any events scheduled
-- Return status "closed"
+- Return status "done"
