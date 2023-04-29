@@ -1,40 +1,48 @@
-import { set, reset } from 'mockdate'; 
+import { set, reset } from 'mockdate';
+
+type EventStatus = {
+  status: string;
+}
 
 export class CheckLastEventStatus {
-	constructor(
-		private readonly loadLastEventRepository: LoadLastEventRepository,
-	) {}
+  constructor(
+    private readonly loadLastEventRepository: LoadLastEventRepository,
+  ) { }
 
-	public async exec(input: { groupId: string }): Promise<string> {
-		const event = await this.loadLastEventRepository.loadLastEventFromGroup(input.groupId);
+  public async exec(input: { groupId: string }): Promise<EventStatus> {
+    const event = await this.loadLastEventRepository.loadLastEventFromGroup(input.groupId);
 
     if (!event) {
-      return 'done';
+      return {
+        status: 'done',
+      }
     }
 
     const now = new Date();
 
-		return event.endDate > now ? 'active' : 'inReview';
-	}
+    return {
+      status: event.endDate > now ? 'active' : 'inReview',
+    }
+  }
 }
 
 export interface LoadLastEventRepository {
-	loadLastEventFromGroup(groupId: string): Promise<{ endDate: Date } | undefined>;
+  loadLastEventFromGroup(groupId: string): Promise<{ endDate: Date } | undefined>;
 }
 
 export class LoadLastEventRepositorySpy implements LoadLastEventRepository {
-	public callsCount = 0;
-	public groupId?: string;
-	public output?: { 
-    endDate: Date 
+  public callsCount = 0;
+  public groupId?: string;
+  public output?: {
+    endDate: Date
   };
 
-	public async loadLastEventFromGroup(groupId: string): Promise<{ endDate: Date } | undefined> {
-		this.callsCount++;
-		this.groupId = groupId;
+  public async loadLastEventFromGroup(groupId: string): Promise<{ endDate: Date } | undefined> {
+    this.callsCount++;
+    this.groupId = groupId;
 
-		return this.output;
-	}
+    return this.output;
+  }
 }
 
 type SUTType = {
@@ -42,7 +50,7 @@ type SUTType = {
   sut: CheckLastEventStatus;
 }
 
-const makeSUT = (): SUTType  => {
+const makeSUT = (): SUTType => {
   const loadLastEventRepository = new LoadLastEventRepositorySpy();
   const sut = new CheckLastEventStatus(
     loadLastEventRepository,
@@ -65,46 +73,46 @@ describe('CheckLastEventStatus', (): void => {
     reset();
   });
 
-	it('should get last event data', async (): Promise<void> => {
+  it('should get last event data', async (): Promise<void> => {
     const { sut, loadLastEventRepository } = makeSUT();
 
-		await sut.exec({ groupId });
+    await sut.exec({ groupId });
 
-		expect(loadLastEventRepository.groupId).toBe('any_group_id');
-		expect(loadLastEventRepository.callsCount).toBe(1);
-	});
+    expect(loadLastEventRepository.groupId).toBe('any_group_id');
+    expect(loadLastEventRepository.callsCount).toBe(1);
+  });
 
-	it('should return status done when group has no event', async (): Promise<void> => {
+  it('should return status done when group has no event', async (): Promise<void> => {
     const { sut, loadLastEventRepository } = makeSUT();
 
-		loadLastEventRepository.output = undefined;
+    loadLastEventRepository.output = undefined;
 
-		const status = await sut.exec({ groupId });
+    const eventStatus = await sut.exec({ groupId });
 
-		expect(status).toBe('done');
-	});
+    expect(eventStatus.status).toBe('done');
+  });
 
   it('should return status active when now is before event end time', async (): Promise<void> => {
     const { sut, loadLastEventRepository } = makeSUT();
 
-		loadLastEventRepository.output = {
+    loadLastEventRepository.output = {
       endDate: new Date(new Date().getTime() + 1),
     };
 
-		const status = await sut.exec({ groupId });
+    const eventStatus = await sut.exec({ groupId });
 
-		expect(status).toBe('active');
-	});
+    expect(eventStatus.status).toBe('active');
+  });
 
   it('should return status inReview when now is after event end time', async (): Promise<void> => {
     const { sut, loadLastEventRepository } = makeSUT();
 
-		loadLastEventRepository.output = {
+    loadLastEventRepository.output = {
       endDate: new Date(new Date().getTime() - 1),
     };
 
-		const status = await sut.exec({ groupId });
+    const eventStatus = await sut.exec({ groupId });
 
-		expect(status).toBe('inReview');
-	});
+    expect(eventStatus.status).toBe('inReview');
+  });
 });
