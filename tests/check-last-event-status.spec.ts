@@ -13,9 +13,12 @@ export interface LoadLastEventRepository {
 }
 
 export class LoadLastEventRepositoryMock implements LoadLastEventRepository {
+  public callsCount: number = 0;
 	public groupId?: string;
 
 	public async loadLastEvent(groupId: string) {
+    this.callsCount++;
+    
 		this.groupId = groupId;
 	}
 }
@@ -28,5 +31,6 @@ describe('CheckLastEventStatus', (): void => {
 		await sut.exec('any_group_id');
 
 		expect(loadLastEventRepository.groupId).toBe('any_group_id');
+		expect(loadLastEventRepository.callsCount).toBe(1);
 	});
 });
