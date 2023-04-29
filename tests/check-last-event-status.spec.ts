@@ -21,7 +21,7 @@ export class CheckLastEventStatus {
     const now = new Date();
 
     return {
-      status: event.endDate > now ? 'active' : 'inReview',
+      status: event.endDate >= now ? 'active' : 'inReview',
     }
   }
 }
@@ -97,6 +97,18 @@ describe('CheckLastEventStatus', (): void => {
 
     loadLastEventRepository.output = {
       endDate: new Date(new Date().getTime() + 1),
+    };
+
+    const eventStatus = await sut.exec({ groupId });
+
+    expect(eventStatus.status).toBe('active');
+  });
+
+  it('should return status active when now is equal to event end time', async (): Promise<void> => {
+    const { sut, loadLastEventRepository } = makeSUT();
+
+    loadLastEventRepository.output = {
+      endDate: new Date(),
     };
 
     const eventStatus = await sut.exec({ groupId });
