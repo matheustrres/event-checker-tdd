@@ -7,6 +7,7 @@ module.exports = {
   },
   plugins: [
     '@typescript-eslint/eslint-plugin',
+    'eslint-plugin-import-helpers',
   ],
   extends: [
     'plugin:@typescript-eslint/recommended',
@@ -30,23 +31,6 @@ module.exports = {
         asyncArrow: 'always'
       }
     ],
-    'import-helpers/order-imports': [
-      'warn',
-      {
-        newlinesBetween: 'always',
-        groups: [
-          '/^node/',
-          'module',
-          '/^(.|..)\//',
-          '/^@app/',
-          ['sibling']
-        ],
-        alphabetize: {
-          order: 'asc',
-          ignoreCase: false,
-        }
-      }
-    ],
     'getter-return': 'error',
     'no-async-promise-executor': 'error',
     'no-await-in-loop': 'warn',
@@ -62,6 +46,22 @@ module.exports = {
         anonymous: 'never',
         named: 'always',
         asyncArrow: 'always'
+      }
+    ],
+    'import-helpers/order-imports': [
+      'warn',
+      {
+        newlinesBetween: 'always',
+        groups: [
+          '/^node/',
+          'module',
+          '/^(.|..)\//',
+          ['sibling']
+        ],
+        alphabetize: {
+          order: 'asc',
+          ignoreCase: false,
+        }
       }
     ],
     'accessor-pairs': [
