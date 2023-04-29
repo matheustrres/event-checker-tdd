@@ -153,4 +153,20 @@ describe('CheckLastEventStatus', (): void => {
 
     expect(eventStatus.status).toBe('inReview');
   });
+
+  it('should return status "inReview" when NOW is EQUAL to review time', async (): Promise<void> => {
+    const { sut, loadLastEventRepository } = makeSUT();
+
+    const reviewDurationInHours: number = 1;
+    const reviewDurationInMs: number = reviewDurationInHours * 60 * 60 * 1000;
+
+    loadLastEventRepository.output = {
+      endDate: new Date(new Date().getTime() - reviewDurationInMs),
+      reviewDurationInHours: 1,
+    }
+
+    const eventStatus = await sut.exec({ groupId });
+
+    expect(eventStatus.status).toBe('inReview');
+  });
 });
