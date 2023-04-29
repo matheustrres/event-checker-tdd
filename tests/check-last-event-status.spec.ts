@@ -8,7 +8,13 @@ export class CheckLastEventStatus {
 	public async exec(input: { groupId: string }): Promise<string> {
 		const event = await this.loadLastEventRepository.loadLastEventFromGroup(input.groupId);
 
-		return event ? 'active' : 'done';
+    if (!event) {
+      return 'done';
+    }
+
+    const now = new Date();
+
+		return event.endDate > now ? 'active' : 'inReview';
 	}
 }
 
@@ -88,5 +94,17 @@ describe('CheckLastEventStatus', (): void => {
 		const status = await sut.exec({ groupId });
 
 		expect(status).toBe('active');
+	});
+
+  it('should return status inReview when now is after event end time', async (): Promise<void> => {
+    const { sut, loadLastEventRepository } = makeSUT();
+
+		loadLastEventRepository.output = {
+      endDate: new Date(new Date().getTime() - 1),
+    };
+
+		const status = await sut.exec({ groupId });
+
+		expect(status).toBe('inReview');
 	});
 });

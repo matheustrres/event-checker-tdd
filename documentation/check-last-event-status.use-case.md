@@ -12,7 +12,7 @@
 - Return status "active"
 
 > ## Alternative flow: Event closed, but is within the market period for banknotes
-- Return status "under review
+- Return status "inReview"
 
 > ## Alternative flow: Event and note market closed
 - Return status "done"
